@@ -2,6 +2,7 @@ window.JOB_CONFIG = {
   categories: {
     equipment: {
       label: "Agricultural Equipment Operation",
+      icon: "icons/equipment.svg",
       duties: [
         { id: "operate-tractors", label: "Operate tractors and farm vehicles" },
         { id: "operate-tillage", label: "Operate tillage and soil-preparation equipment" },
@@ -20,6 +21,7 @@ window.JOB_CONFIG = {
 
     beekeeping: {
       label: "Beekeeping",
+      icon: "icons/beekeeper.svg",
       duties: [
         { id: "maintain-hives", label: "Assemble, prepare, or maintain hives" },
         { id: "care-colonies", label: "Handle and care for live bee colonies" },
@@ -36,16 +38,19 @@ window.JOB_CONFIG = {
 
     piloting: {
       label: "Commercial Piloting",
+      icon: "icons/equipment.svg",
       duties: []
     },
 
     construction: {
       label: "Construction",
+      icon: "icons/construction.svg",
       duties: []
     },
 
     farmwork: {
       label: "Crop Farmwork",
+      icon: "icons/farmer.svg",
       duties: [
         { id: "prepare-soil", label: "Prepare, till, or condition soil" },
         { id: "plant", label: "Plant or transplant crops" },
@@ -67,11 +72,13 @@ window.JOB_CONFIG = {
 
     livestock: {
       label: "Livestock Work",
+      icon: "icons/livestock.svg",
       duties: []
     },
 
     maintenance: {
       label: "Maintenance and Repair",
+      icon: "icons/maintenance.svg",
       duties: [
         { id: "inspect-maintenance", label: "Inspect equipment, machinery, vehicles, or facilities for maintenance needs" },
         { id: "routine-maintenance", label: "Perform routine maintenance and servicing on farm machinery or equipment" },
@@ -101,11 +108,13 @@ window.JOB_CONFIG = {
 
     chemical: {
       label: "Pesticide Handling, Spraying, and Application",
+      icon: "icons/chemical.svg",
       duties: []
     },
 
     supervision: {
       label: "Supervision",
+      icon: "icons/supervisor.svg",
       duties: [
         { id: "assign-work", label: "Assign work and direct workers" },
         { id: "schedule-crews", label: "Plan or schedule crews and daily work" },
@@ -124,6 +133,7 @@ window.JOB_CONFIG = {
 
     trucking: {
       label: "Trucking",
+      icon: "icons/trucking.svg",
       duties: []
     }
   }
