@@ -40,7 +40,7 @@ const fields = {
 
   categoryStep: document.getElementById("categoryStep"),
   workContextStep: document.getElementById("workContextStep"),
-  jobDetailStep: document.getElementById("jobDetailStep"),
+  jobDetailsStep: document.getElementById("jobDetailsStep"),
   dutiesStep: document.getElementById("dutiesStep"),
   notesStep: document.getElementById("notesStep"),
   reviewStep: document.getElementById("reviewStep"),
