@@ -8,14 +8,14 @@ if (!JOB_CONFIG || !JOB_CONFIG.categories) {
 const jobState = {
   primaryCategory: null,
 
+  maintenanceLevel: null,
+  supervisionLevel: null,
+
   outputs: "",
   outputsNone: false,
 
   equipment: "",
   equipmentNone: false,
-
-  maintenanceLevel: null,
-  supervisionLevel: null,
 
   duties: {},
   otherDuties: {},
@@ -23,7 +23,7 @@ const jobState = {
   additionalInfo: ""
 };
 
-const STEP_COUNT = 5;
+const STEP_COUNT = 6;
 
 let currentStep = 1;
 
@@ -242,20 +242,6 @@ function validateStep() {
   if (currentStep === 2) {
     syncContextState();
 
-    if (!jobState.outputs && !jobState.outputsNone) {
-      fields.contextError.textContent =
-        "Please describe the agricultural products involved or select None / Not applicable.";
-
-      return false;
-    }
-
-    if (!jobState.equipment && !jobState.equipmentNone) {
-      fields.contextError.textContent =
-        "Please describe the equipment used or select None / Not applicable.";
-
-      return false;
-    }
-
     if (
       jobState.primaryCategory !== "maintenance" &&
       !jobState.maintenanceLevel
@@ -278,6 +264,24 @@ function validateStep() {
   }
 
   if (currentStep === 3) {
+    syncContextState();
+
+    if (!jobState.outputs && !jobState.outputsNone) {
+      fields.contextError.textContent =
+        "Please describe the agricultural products involved or select None / Not applicable.";
+
+      return false;
+    }
+
+    if (!jobState.equipment && !jobState.equipmentNone) {
+      fields.contextError.textContent =
+        "Please describe the equipment used or select None / Not applicable.";
+
+      return false;
+    }
+  }
+
+  if (currentStep === 4) {
     saveCurrentDutyNotes();
 
     const categoryId = dutyQueue[dutyQueueIndex];
@@ -298,11 +302,11 @@ function validateStep() {
 function goNext() {
   if (!validateStep()) return;
 
-  if (currentStep === 2) {
+  if (currentStep === 3) {
     buildDutyQueue();
   }
 
-  if (currentStep === 3) {
+  if (currentStep === 4) {
     saveCurrentDutyNotes();
 
     if (dutyQueueIndex < dutyQueue.length - 1) {
@@ -321,11 +325,11 @@ function goNext() {
     configureContextStep();
   }
 
-  if (currentStep === 3) {
+  if (currentStep === 4) {
     renderCurrentDutyCategory();
   }
 
-  if (currentStep === 5) {
+  if (currentStep === 6) {
     syncFinalState();
     renderReview();
   }
@@ -334,7 +338,7 @@ function goNext() {
 }
 
 function goBack() {
-  if (currentStep === 3 && dutyQueueIndex > 0) {
+  if (currentStep === 4 && dutyQueueIndex > 0) {
     saveCurrentDutyNotes();
     dutyQueueIndex--;
     renderCurrentDutyCategory();
@@ -346,7 +350,7 @@ function goBack() {
     currentStep--;
   }
 
-  if (currentStep === 3) {
+  if (currentStep === 4) {
     renderCurrentDutyCategory();
   }
 
