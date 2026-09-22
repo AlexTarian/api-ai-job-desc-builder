@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Description Builder</title>
+
+  <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+  <link rel="stylesheet" href="styles.css?v=1" />
+</head>
+
+<body>
+  <div class="widget" id="widgetRoot">
+    <div class="widget-header">
+      <div>
+        <h2>Job Description Builder</h2>
+        <div class="progress-text" id="progressText">Step 1 of 5</div>
+      </div>
+    </div>
+
+    <div class="progress-bar" aria-hidden="true">
+      <div id="progressFill" class="progress-fill"></div>
+    </div>
+
+    <!-- STEP 1: PRIMARY CATEGORY -->
+    <section id="categoryStep" class="step">
+      <h3>What is the worker's primary type of work?</h3>
+      <p class="step-help">Choose the category that best describes the worker's main responsibilities.</p>
+
+      <div id="categoryGrid" class="category-grid"></div>
+
+      <div id="categoryError" class="error" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 2: JOB CONTEXT -->
+    <section id="contextStep" class="step" hidden>
+      <h3>Tell us a little more about the job</h3>
+
+      <div class="question-block">
+        <label for="outputs">What crops, livestock, or other agricultural products will workers help produce or handle?</label>
+        <textarea id="outputs" rows="3" placeholder="Examples: corn, soybeans, cattle, milk, honey, nursery plants"></textarea>
+
+        <label class="checkbox-row compact-check">
+          <input id="outputsNone" type="checkbox" />
+          None / Not applicable
+        </label>
+      </div>
+
+      <div class="question-block">
+        <label for="equipment">What equipment, machinery, vehicles, or tools will workers use?</label>
+        <textarea id="equipment" rows="3" placeholder="Examples: tractors, combines, planters, grain carts, hand tools"></textarea>
+
+        <label class="checkbox-row compact-check">
+          <input id="equipmentNone" type="checkbox" />
+          None / Not applicable
+        </label>
+      </div>
+
+      <div id="maintenanceQuestion" class="question-block">
+        <label>How much maintenance or repair work will workers perform?</label>
+
+        <div class="choice-list">
+          <label><input type="radio" name="maintenanceLevel" value="none" /> None</label>
+          <label><input type="radio" name="maintenanceLevel" value="incidental" /> Occasional / incidental</label>
+          <label><input type="radio" name="maintenanceLevel" value="regular" /> Regular part of the job</label>
+          <label><input type="radio" name="maintenanceLevel" value="significant" /> Significant part of the job</label>
+        </div>
+      </div>
+
+      <div id="supervisionQuestion" class="question-block">
+        <label>How much supervision of other workers will this position involve?</label>
+
+        <div class="choice-list">
+          <label><input type="radio" name="supervisionLevel" value="none" /> None</label>
+          <label><input type="radio" name="supervisionLevel" value="incidental" /> Occasional</label>
+          <label><input type="radio" name="supervisionLevel" value="regular" /> Regular supervision</label>
+          <label><input type="radio" name="supervisionLevel" value="significant" /> Significant part of the job</label>
+        </div>
+      </div>
+
+      <div id="contextError" class="error" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 3: DUTIES -->
+    <section id="dutiesStep" class="step" hidden>
+      <div class="duties-heading">
+        <div>
+          <h3 id="dutiesTitle">Select applicable duties</h3>
+          <p id="dutiesHelp" class="step-help">Select all duties that apply.</p>
+        </div>
+
+        <span id="dutiesProgress" class="count-badge"></span>
+      </div>
+
+      <div id="dutiesList" class="duty-list"></div>
+
+      <div class="other-duty-wrap">
+        <label for="otherDuty">Other work in this category</label>
+        <textarea id="otherDuty" rows="2" placeholder="Describe any important duty not listed above."></textarea>
+      </div>
+
+      <div id="dutiesError" class="error" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 4: ADDITIONAL INFO -->
+    <section id="notesStep" class="step" hidden>
+      <h3>Anything else we should know?</h3>
+      <p class="step-help">Include unusual tasks, seasonal details, or anything else that would help us describe the job accurately.</p>
+
+      <textarea id="additionalInfo" rows="6" placeholder="Additional job details..."></textarea>
+    </section>
+
+    <!-- STEP 5: REVIEW -->
+    <section id="reviewStep" class="step" hidden>
+      <h3>Review Job Information</h3>
+      <p class="step-help">This is the structured information that will eventually be sent to the Job Description generator.</p>
+
+      <div id="reviewContent" class="review-card"></div>
+
+      <div class="generate-wrap">
+        <button id="generateBtn" type="button">Generate Job Description</button>
+        <div class="coming-soon">AI generation will be connected after the questionnaire is finalized.</div>
+      </div>
+    </section>
+
+    <div class="navigation-row">
+      <button id="backBtn" class="secondary-btn" type="button" hidden>Back</button>
+      <button id="nextBtn" type="button">Continue</button>
+    </div>
+
+    <div id="globalError" class="error" aria-live="polite"></div>
+  </div>
+
+  <script src="job-config.js?v=1"></script>
+  <script src="job-builder.js?v=1"></script>
+</body>
+</html>
