@@ -1,4 +1,5 @@
 const JOB_CONFIG = window.JOB_CONFIG;
+console.log("job-builder.js loaded. JOB_CONFIG:", JOB_CONFIG);
 
 if (!JOB_CONFIG || !JOB_CONFIG.categories) {
   console.error("JOB_CONFIG did not load correctly.");
