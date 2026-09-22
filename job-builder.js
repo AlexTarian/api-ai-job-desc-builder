@@ -320,6 +320,11 @@ function goNext() {
     }
   }
 
+  if (currentStep === 6) {
+    handleSubmit();
+    return;
+  }
+
   if (currentStep < STEP_COUNT) {
     currentStep++;
   }
@@ -407,6 +412,16 @@ function reviewSection(label, value) {
   `;
 }
 
+function handleSubmit() {
+  console.log(
+    "Structured job payload:",
+    structuredClone(jobState)
+  );
+
+  fields.globalError.textContent =
+    "AI generation will be connected next.";
+}
+
 function formatLevel(value) {
   const labels = {
     none: "None",
@@ -439,8 +454,15 @@ function renderStep() {
 
   fields.backBtn.hidden = currentStep === 1;
 
-  fields.nextBtn.hidden = currentStep === 5;
-  fields.nextBtn.textContent = currentStep === 4 ? "Review" : "Continue";
+  fields.nextBtn.hidden = false;
+
+  if (currentStep === 5) {
+    fields.nextBtn.textContent = "Review";
+  } else if (currentStep === 6) {
+    fields.nextBtn.textContent = "Use Job Description";
+  } else {
+    fields.nextBtn.textContent = "Continue";
+  }
 
   updateProgress();
   updateWidgetHeight();
