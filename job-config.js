@@ -1,4 +1,4 @@
-const JOB_CONFIG = {
+window.JOB_CONFIG = {
   categories: {
     equipment: {
       label: "Agricultural Equipment Operation",
