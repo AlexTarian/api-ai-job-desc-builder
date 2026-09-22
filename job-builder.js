@@ -1,3 +1,9 @@
+const JOB_CONFIG = window.JOB_CONFIG;
+
+if (!JOB_CONFIG || !JOB_CONFIG.categories) {
+  console.error("JOB_CONFIG did not load correctly.");
+}
+
 const jobState = {
   primaryCategory: null,
 
