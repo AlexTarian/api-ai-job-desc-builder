@@ -36,26 +36,6 @@
     <section id="contextStep" class="step" hidden>
       <h3>Tell us a little more about the job</h3>
 
-      <div class="question-block">
-        <label for="outputs">What crops, livestock, or other agricultural products will workers help produce or handle?</label>
-        <textarea id="outputs" rows="3" placeholder="Examples: corn, soybeans, cattle, milk, honey, nursery plants"></textarea>
-
-        <label class="checkbox-row compact-check">
-          <input id="outputsNone" type="checkbox" />
-          None / Not applicable
-        </label>
-      </div>
-
-      <div class="question-block">
-        <label for="equipment">What equipment, machinery, vehicles, or tools will workers use?</label>
-        <textarea id="equipment" rows="3" placeholder="Examples: tractors, combines, planters, grain carts, hand tools"></textarea>
-
-        <label class="checkbox-row compact-check">
-          <input id="equipmentNone" type="checkbox" />
-          None / Not applicable
-        </label>
-      </div>
-
       <div id="maintenanceQuestion" class="question-block">
         <label>How much maintenance or repair work will workers perform?</label>
 
@@ -81,7 +61,34 @@
       <div id="contextError" class="error" aria-live="polite"></div>
     </section>
 
-    <!-- STEP 3: DUTIES -->
+    <!-- STEP 3: JOB CONTEXT -->
+    <section id="contextStep" class="step" hidden>
+      <h3>Tell us a little more about the job</h3>
+
+      <div class="question-block">
+        <label for="outputs">What crops, livestock, or other agricultural products will workers help produce or handle?</label>
+        <textarea id="outputs" rows="3" placeholder="Examples: corn, soybeans, cattle, milk, honey, nursery plants"></textarea>
+
+        <label class="checkbox-row compact-check">
+          <input id="outputsNone" type="checkbox" />
+          None / Not applicable
+        </label>
+      </div>
+
+      <div class="question-block">
+        <label for="equipment">What equipment, machinery, vehicles, or tools will workers use?</label>
+        <textarea id="equipment" rows="3" placeholder="Examples: tractors, combines, planters, grain carts, hand tools"></textarea>
+
+        <label class="checkbox-row compact-check">
+          <input id="equipmentNone" type="checkbox" />
+          None / Not applicable
+        </label>
+      </div>
+
+      <div id="contextError" class="error" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 4: DUTIES -->
     <section id="dutiesStep" class="step" hidden>
       <div class="duties-heading">
         <div>
@@ -102,7 +109,7 @@
       <div id="dutiesError" class="error" aria-live="polite"></div>
     </section>
 
-    <!-- STEP 4: ADDITIONAL INFO -->
+    <!-- STEP 5: ADDITIONAL INFO -->
     <section id="notesStep" class="step" hidden>
       <h3>Anything else we should know?</h3>
       <p class="step-help">Include unusual tasks, seasonal details, or anything else that would help us describe the job accurately.</p>
@@ -110,7 +117,7 @@
       <textarea id="additionalInfo" rows="6" placeholder="Additional job details..."></textarea>
     </section>
 
-    <!-- STEP 5: REVIEW -->
+    <!-- STEP 6: REVIEW -->
     <section id="reviewStep" class="step" hidden>
       <h3>Review Job Information</h3>
       <p class="step-help">This is the structured information that will eventually be sent to the Job Description generator.</p>
