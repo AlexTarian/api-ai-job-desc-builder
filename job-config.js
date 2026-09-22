@@ -138,3 +138,5 @@ window.JOB_CONFIG = {
     }
   }
 };
+
+console.log("job-config.js loaded:", window.JOB_CONFIG);
