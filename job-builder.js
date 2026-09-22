@@ -44,6 +44,17 @@ const fields = {
   dutiesStep: document.getElementById("dutiesStep"),
   notesStep: document.getElementById("notesStep"),
   reviewStep: document.getElementById("reviewStep"),
+  loadingStep: document.getElementById("loadingStep"),
+  resultStep: document.getElementById("resultStep"),
+
+  reviewBackBtn: document.getElementById("reviewBackBtn"),
+  generateBtn: document.getElementById("generateBtn"),
+
+  generatedDescription: document.getElementById("generatedDescription"),
+  generationWarnings: document.getElementById("generationWarnings"),
+
+  regenerateBtn: document.getElementById("regenerateBtn"),
+  useDescriptionBtn: document.getElementById("useDescriptionBtn"),
 
   categoryGrid: document.getElementById("categoryGrid"),
   categoryError: document.getElementById("categoryError"),
@@ -452,17 +463,16 @@ function renderStep() {
   fields.notesStep.hidden = currentStep !== 5;
   fields.reviewStep.hidden = currentStep !== 6;
 
-  fields.backBtn.hidden = currentStep === 1;
+  fields.loadingStep.hidden = true;
+  fields.resultStep.hidden = true;
 
-  fields.nextBtn.hidden = false;
+  const isReview = currentStep === 6;
 
-  if (currentStep === 5) {
-    fields.nextBtn.textContent = "Review";
-  } else if (currentStep === 6) {
-    fields.nextBtn.textContent = "Use Job Description";
-  } else {
-    fields.nextBtn.textContent = "Continue";
-  }
+  fields.backBtn.hidden = currentStep === 1 || isReview;
+  fields.nextBtn.hidden = isReview;
+
+  fields.nextBtn.textContent =
+    currentStep === 5 ? "Review" : "Continue";
 
   updateProgress();
   updateWidgetHeight();
@@ -503,6 +513,89 @@ function updateWidgetHeight() {
   });
 }
 
+function showLoadingScreen() {
+  fields.categoryStep.hidden = true;
+  fields.workContextStep.hidden = true;
+  fields.jobDetailsStep.hidden = true;
+  fields.dutiesStep.hidden = true;
+  fields.notesStep.hidden = true;
+  fields.reviewStep.hidden = true;
+  fields.resultStep.hidden = true;
+
+  fields.loadingStep.hidden = false;
+
+  fields.backBtn.hidden = true;
+  fields.nextBtn.hidden = true;
+
+  updateWidgetHeight();
+}
+
+function showResultScreen(description, warnings = []) {
+  fields.loadingStep.hidden = true;
+  fields.resultStep.hidden = false;
+
+  fields.generatedDescription.value =
+    description || "";
+
+  if (warnings.length) {
+    fields.generationWarnings.hidden = false;
+
+    fields.generationWarnings.innerHTML = warnings
+      .map(warning => `<div>⚠ ${escapeHtml(warning)}</div>`)
+      .join("");
+  } else {
+    fields.generationWarnings.hidden = true;
+    fields.generationWarnings.innerHTML = "";
+  }
+
+  updateWidgetHeight();
+}
+
+function showGenerationError(message) {
+  fields.loadingStep.hidden = true;
+  fields.reviewStep.hidden = false;
+
+  fields.globalError.textContent =
+    message || "The job description could not be generated. Please try again.";
+
+  updateWidgetHeight();
+}
+
+async function generateJobDescription() {
+  fields.globalError.textContent = "";
+
+  syncFinalState();
+
+  showLoadingScreen();
+
+  try {
+    const payload = buildGenerationPayload();
+
+    console.log(
+      "Generation payload:",
+      structuredClone(payload)
+    );
+
+    // Temporary placeholder until GAS/OpenAI is connected.
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const description =
+      "Generated job description will appear here once the AI backend is connected.";
+
+    showResultScreen(description);
+  } catch (err) {
+    console.error("Generation failed:", err);
+
+    showGenerationError(
+      "We couldn't generate the job description. Please review the information and try again."
+    );
+  }
+}
+
+function buildGenerationPayload() {
+  return structuredClone(jobState);
+}
+
 function wireEvents() {
   fields.nextBtn.addEventListener("click", goNext);
   fields.backBtn.addEventListener("click", goBack);
@@ -525,6 +618,31 @@ function wireEvents() {
 
   fields.generateBtn.addEventListener("click", () => {
     console.log("Structured job payload:", structuredClone(jobState));
+  });
+
+  fields.reviewBackBtn.addEventListener("click", () => {
+    currentStep = 5;
+    renderStep();
+  });
+
+  fields.generateBtn.addEventListener(
+    "click",
+    generateJobDescription
+  );
+
+  fields.regenerateBtn.addEventListener(
+    "click",
+    generateJobDescription
+  );
+
+  fields.useDescriptionBtn.addEventListener("click", () => {
+    const description =
+      clean_(fields.generatedDescription.value);
+
+    console.log(
+      "Accepted job description:",
+      description
+    );
   });
 }
 
