@@ -39,7 +39,8 @@ const fields = {
   progressFill: document.getElementById("progressFill"),
 
   categoryStep: document.getElementById("categoryStep"),
-  contextStep: document.getElementById("contextStep"),
+  workContextStep: document.getElementById("workContextStep"),
+  jobDetailStep: document.getElementById("jobDetailStep"),
   dutiesStep: document.getElementById("dutiesStep"),
   notesStep: document.getElementById("notesStep"),
   reviewStep: document.getElementById("reviewStep"),
@@ -117,13 +118,7 @@ function renderCategories() {
   });
 }
 
-function syncContextState() {
-  jobState.outputs = clean_(fields.outputs.value);
-  jobState.outputsNone = fields.outputsNone.checked;
-
-  jobState.equipment = clean_(fields.equipment.value);
-  jobState.equipmentNone = fields.equipmentNone.checked;
-
+function syncWorkContextState() {
   jobState.maintenanceLevel =
     document.querySelector('input[name="maintenanceLevel"]:checked')?.value || null;
 
@@ -131,7 +126,15 @@ function syncContextState() {
     document.querySelector('input[name="supervisionLevel"]:checked')?.value || null;
 }
 
-function configureContextStep() {
+function syncJobDetailsState() {
+  jobState.outputs = clean_(fields.outputs.value);
+  jobState.outputsNone = fields.outputsNone.checked;
+
+  jobState.equipment = clean_(fields.equipment.value);
+  jobState.equipmentNone = fields.equipmentNone.checked;
+}
+
+function configureWorkContextStep() {
   const primary = jobState.primaryCategory;
 
   fields.maintenanceQuestion.hidden = primary === "maintenance";
@@ -240,7 +243,7 @@ function validateStep() {
   }
 
   if (currentStep === 2) {
-    syncContextState();
+    syncWorkContextState();
 
     if (
       jobState.primaryCategory !== "maintenance" &&
@@ -264,7 +267,7 @@ function validateStep() {
   }
 
   if (currentStep === 3) {
-    syncContextState();
+    syncJobDetailsState();
 
     if (!jobState.outputs && !jobState.outputsNone) {
       fields.contextError.textContent =
@@ -322,7 +325,7 @@ function goNext() {
   }
 
   if (currentStep === 2) {
-    configureContextStep();
+    configureWorkContextStep();
   }
 
   if (currentStep === 4) {
@@ -428,10 +431,11 @@ function escapeHtml(value) {
 
 function renderStep() {
   fields.categoryStep.hidden = currentStep !== 1;
-  fields.contextStep.hidden = currentStep !== 2;
-  fields.dutiesStep.hidden = currentStep !== 3;
-  fields.notesStep.hidden = currentStep !== 4;
-  fields.reviewStep.hidden = currentStep !== 5;
+  fields.workContextStep.hidden = currentStep !== 2;
+  fields.jobDetailsStep.hidden = currentStep !== 3;
+  fields.dutiesStep.hidden = currentStep !== 4;
+  fields.notesStep.hidden = currentStep !== 5;
+  fields.reviewStep.hidden = currentStep !== 6;
 
   fields.backBtn.hidden = currentStep === 1;
 
@@ -530,5 +534,3 @@ if (typeof JFCustomWidget !== "undefined") {
     updateWidgetHeight();
   });
 }
-
-JFCustomWidget.subscribe("ready", initializeWidget);
