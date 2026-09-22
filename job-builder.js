@@ -28,6 +28,8 @@ let currentStep = 1;
 
 let dutyQueue = [];
 let dutyQueueIndex = 0;
+let initialized = false;
+let jotformReady = false;
 
 const fields = {
   widgetRoot: document.getElementById("widgetRoot"),
@@ -87,7 +89,18 @@ function renderCategories() {
 
     button.type = "button";
     button.className = "category-card";
-    button.textContent = category.label;
+    button.innerHTML = `
+      <img
+        class="category-icon"
+        src="${escapeHtml(category.icon)}"
+        alt=""
+        aria-hidden="true"
+      />
+
+      <span class="category-label">
+        ${escapeHtml(category.label)}
+      </span>
+    `;
 
     if (jobState.primaryCategory === id) {
       button.classList.add("selected");
@@ -435,14 +448,15 @@ function updateProgress() {
 }
 
 function updateWidgetHeight() {
+  if (!jotformReady || typeof JFCustomWidget === "undefined") {
+    return;
+  }
+
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       try {
-        const height =
-          fields.widgetRoot.getBoundingClientRect().height;
-
-        const style =
-          getComputedStyle(document.body);
+        const height = fields.widgetRoot.getBoundingClientRect().height;
+        const style = getComputedStyle(document.body);
 
         const padding =
           (parseFloat(style.paddingTop) || 0) +
@@ -484,9 +498,32 @@ function wireEvents() {
 }
 
 function initializeWidget() {
+  if (initialized) return;
+  initialized = true;
+
+  console.log("Initializing Job Description Builder:", JOB_CONFIG);
+
   renderCategories();
   wireEvents();
   renderStep();
+}
+
+function initializeWhenDomReady() {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeWidget);
+  } else {
+    initializeWidget();
+  }
+}
+
+initializeWhenDomReady();
+
+if (typeof JFCustomWidget !== "undefined") {
+  JFCustomWidget.subscribe("ready", function () {
+    jotformReady = true;
+    initializeWidget();
+    updateWidgetHeight();
+  });
 }
 
 JFCustomWidget.subscribe("ready", initializeWidget);
