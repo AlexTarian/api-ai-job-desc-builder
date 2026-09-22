@@ -120,13 +120,56 @@
     <!-- STEP 6: REVIEW -->
     <section id="reviewStep" class="step" hidden>
       <h3>Review Job Information</h3>
-      <p class="step-help">This is the structured information that will eventually be sent to the Job Description generator.</p>
+      <p class="step-help">Please review the information below before generating the job description.</p>
 
       <div id="reviewContent" class="review-card"></div>
 
-      <div class="generate-wrap">
+      <div class="review-actions">
+        <button id="reviewBackBtn" class="secondary-btn" type="button">Back</button>
         <button id="generateBtn" type="button">Generate Job Description</button>
-        <div class="coming-soon">AI generation will be connected after the questionnaire is finalized.</div>
+      </div>
+    </section>
+
+    <!-- GENERATING -->
+    <section id="loadingStep" class="generation-screen" hidden>
+      <div class="loading-content">
+        <div class="ai-spinner" aria-hidden="true"></div>
+
+        <h3>Building Your Job Description</h3>
+
+        <p>
+          We're reviewing the job information and preparing a compliant,
+          detailed description.
+        </p>
+
+        <div class="loading-note">
+          This may take a few moments.
+        </div>
+      </div>
+    </section>
+
+    <!-- GENERATED DESCRIPTION -->
+    <section id="resultStep" class="generation-screen" hidden>
+      <h3>Generated Job Description</h3>
+
+      <p class="step-help">
+        Review and edit the description below before using it in the form.
+      </p>
+
+      <label class="sr-only" for="generatedDescription">Generated Job Description</label>
+
+      <textarea
+        id="generatedDescription"
+        class="generated-description"
+        rows="12"
+        aria-label="Generated Job Description"
+      ></textarea>
+
+      <div id="generationWarnings" class="generation-warnings" hidden></div>
+
+      <div class="result-actions">
+        <button id="regenerateBtn" class="secondary-btn" type="button">Regenerate</button>
+        <button id="useDescriptionBtn" type="button">Use Job Description</button>
       </div>
     </section>
 
