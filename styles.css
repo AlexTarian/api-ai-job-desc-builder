@@ -232,6 +232,11 @@ select:focus {
   line-height: 1.3;
 }
 
+.generated-description:read-only {
+  background: var(--bg-soft);
+  border-color: var(--blue);
+}
+
 .other-duty-wrap {
   margin-top: 12px;
 }
