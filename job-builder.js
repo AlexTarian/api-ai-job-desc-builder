@@ -31,6 +31,9 @@ let dutyQueue = [];
 let dutyQueueIndex = 0;
 let initialized = false;
 let jotformReady = false;
+let generatedDescription = "";
+let acceptedDescription = "";
+let descriptionAccepted = false;
 
 const fields = {
   widgetRoot: document.getElementById("widgetRoot"),
@@ -534,8 +537,11 @@ function showResultScreen(description, warnings = []) {
   fields.loadingStep.hidden = true;
   fields.resultStep.hidden = false;
 
-  fields.generatedDescription.value =
-    description || "";
+  fields.generatedDescription.value = description || "";
+  acceptedDescription = "";
+  descriptionAccepted = false;
+
+  fields.generatedDescription.value = generatedDescription;
 
   if (warnings.length) {
     fields.generationWarnings.hidden = false;
@@ -547,6 +553,28 @@ function showResultScreen(description, warnings = []) {
     fields.generationWarnings.hidden = true;
     fields.generationWarnings.innerHTML = "";
   }
+
+  updateWidgetHeight();
+}
+
+function acceptJobDescription() {
+  const description = clean_(fields.generatedDescription.value);
+
+  if (!description) {
+    fields.globalError.textContent =
+      "Please review the generated job description before continuing.";
+
+    return;
+  }
+
+  acceptedDescription = description;
+  descriptionAccepted = true;
+
+  fields.globalError.textContent = "";
+
+  fields.generatedDescription.readOnly = true;
+  fields.useDescriptionBtn.disabled = true;
+  fields.useDescriptionBtn.textContent = "✓ Job Description Selected";
 
   updateWidgetHeight();
 }
@@ -644,6 +672,12 @@ function wireEvents() {
       description
     );
   });
+
+  fields.useDescriptionBtn.addEventListener(
+    "click",
+    acceptJobDescription
+  );
+  
 }
 
 function initializeWidget() {
