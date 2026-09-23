@@ -570,13 +570,38 @@ function acceptJobDescription() {
   acceptedDescription = description;
   descriptionAccepted = true;
 
+  syncJobDescriptionField(description);
+
   fields.globalError.textContent = "";
 
   fields.generatedDescription.readOnly = true;
-  fields.useDescriptionBtn.disabled = true;
-  fields.useDescriptionBtn.textContent = "✓ Job Description Selected";
+  fields.useDescriptionBtn.hidden = true;
+  fields.editDescriptionBtn.hidden = false;
 
   updateWidgetHeight();
+}
+
+function editAcceptedDescription() {
+  descriptionAccepted = false;
+  acceptedDescription = "";
+
+  fields.generatedDescription.readOnly = false;
+
+  fields.useDescriptionBtn.hidden = false;
+  fields.editDescriptionBtn.hidden = true;
+
+  fields.generatedDescription.focus();
+
+  updateWidgetHeight();
+}
+
+function resetAcceptedDescription() {
+  acceptedDescription = "";
+  descriptionAccepted = false;
+
+  fields.generatedDescription.readOnly = false;
+  fields.useDescriptionBtn.hidden = false;
+  fields.editDescriptionBtn.hidden = true;
 }
 
 function showGenerationError(message) {
@@ -622,6 +647,22 @@ async function generateJobDescription() {
 
 function buildGenerationPayload() {
   return structuredClone(jobState);
+}
+
+function syncJobDescriptionField(description) {
+  try {
+    JFCustomWidget.setFieldsValueByLabel([
+      {
+        label: "Job Description",
+        value: description
+      }
+    ]);
+  } catch (err) {
+    console.warn(
+      "Could not update Job Description field:",
+      err
+    );
+  }
 }
 
 function wireEvents() {
@@ -676,6 +717,11 @@ function wireEvents() {
   fields.useDescriptionBtn.addEventListener(
     "click",
     acceptJobDescription
+  );
+
+  fields.editDescriptionBtn.addEventListener(
+    "click",
+    editAcceptedDescription
   );
   
 }
