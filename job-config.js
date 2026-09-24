@@ -35,6 +35,12 @@ window.JOB_CONFIG = {
         { id: "transport-hives", label: "Move or transport hives, bee boxes, or harvested honey" }
       ]
     },
+    
+    construction: {
+      label: "Construction",
+      icon: "icons/construction.svg",
+      duties: []
+    },
 
     piloting: {
       label: "Crop Dusting",
@@ -42,11 +48,6 @@ window.JOB_CONFIG = {
       duties: []
     },
 
-    construction: {
-      label: "Construction",
-      icon: "icons/construction.svg",
-      duties: []
-    },
 
     farmwork: {
       label: "Crop Farmwork",
