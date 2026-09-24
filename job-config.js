@@ -71,9 +71,9 @@ window.JOB_CONFIG = {
         { id: "aircraft-cargo", label: "Load, inspect, or manage aircraft cargo" },
         { id: "flight-records", label: "Maintain flight and aircraft records" },
         { id: "pilot-instruction", label: "Provide pilot instruction, evaluation, or supervision" },
-        { id: "minor-aircraft-maintenance", label: "Maintain aircrafts" },
-        { id: "minor-aircraft-maintenance", label: "Prepare or maintain runways, hangars, or grouns" },
-        { id: "minor-aircraft-maintenance", label: "Fuel and load planes prior to takeoff or between flights" }
+        { id: "aircraft-maintenance", label: "Maintain aircraft" },
+        { id: "maintain-flight-facilities", label: "Prepare or maintain runways, hangars, or grounds" },
+        { id: "fuel-load-aircraft", label: "Fuel and load planes prior to takeoff or between flights" }
       ]
     },
 
