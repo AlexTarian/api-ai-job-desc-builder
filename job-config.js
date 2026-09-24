@@ -37,8 +37,8 @@ window.JOB_CONFIG = {
     },
 
     piloting: {
-      label: "Commercial Piloting",
-      icon: "icons/equipment.svg",
+      label: "Crop Dusting",
+      icon: "icons/pilot.svg",
       duties: []
     },
 
