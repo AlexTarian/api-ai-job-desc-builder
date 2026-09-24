@@ -81,7 +81,6 @@ const fields = {
   additionalInfo: document.getElementById("additionalInfo"),
 
   reviewContent: document.getElementById("reviewContent"),
-  generateBtn: document.getElementById("generateBtn"),
 
   backBtn: document.getElementById("backBtn"),
   nextBtn: document.getElementById("nextBtn"),
@@ -92,6 +91,21 @@ const fields = {
 
   globalError: document.getElementById("globalError")
 };
+
+function getSetting_(name) {
+  try {
+    return clean_(
+      JFCustomWidget.getWidgetSetting(name)
+    );
+  } catch (err) {
+    console.warn(
+      `Could not read setting ${name}:`,
+      err
+    );
+
+    return "";
+  }
+}
 
 function clean_(value) {
   return String(value ?? "").trim();
@@ -338,11 +352,6 @@ function goNext() {
     }
   }
 
-  if (currentStep === 6) {
-    handleSubmit();
-    return;
-  }
-
   if (currentStep < STEP_COUNT) {
     currentStep++;
   }
@@ -428,16 +437,6 @@ function reviewSection(label, value) {
       <div class="review-value">${escapeHtml(value)}</div>
     </div>
   `;
-}
-
-function handleSubmit() {
-  console.log(
-    "Structured job payload:",
-    structuredClone(jobState)
-  );
-
-  fields.globalError.textContent =
-    "AI generation will be connected next.";
 }
 
 function formatLevel(value) {
@@ -622,10 +621,17 @@ function editAcceptedDescription() {
 }
 
 function resetAcceptedDescription() {
+  generatedDescription = "";
   acceptedDescription = "";
   descriptionAccepted = false;
 
+  fields.finalDescription.hidden = true;
+  fields.finalDescription.textContent = "";
+
+  fields.generatedDescription.hidden = false;
   fields.generatedDescription.readOnly = false;
+
+  fields.regenerateBtn.hidden = false;
   fields.useDescriptionBtn.hidden = false;
   fields.editDescriptionBtn.hidden = true;
 }
@@ -644,35 +650,129 @@ async function generateJobDescription() {
   fields.globalError.textContent = "";
 
   syncFinalState();
-
+  resetAcceptedDescription();
   showLoadingScreen();
 
   try {
-    const payload = buildGenerationPayload();
+    const endpoint =
+      getSetting_("generationEndpoint");
 
-    console.log(
-      "Generation payload:",
-      structuredClone(payload)
+    const token =
+      getSetting_("generationToken");
+
+    if (!endpoint) {
+      throw new Error(
+        "The generation endpoint is not configured."
+      );
+    }
+
+    if (!token) {
+      throw new Error(
+        "The generation token is not configured."
+      );
+    }
+
+    const payload = {
+      action: "generateJobDescription",
+      token,
+      job: buildGenerationPayload()
+    };
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+
+      // Deliberately use text/plain so the browser can send
+      // a simple cross-origin POST without a JSON preflight.
+      headers: {
+        "Content-Type": "text/plain;charset=UTF-8"
+      },
+
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Generation server returned HTTP ${response.status}.`
+      );
+    }
+
+    const data = await response.json();
+
+    if (!data?.ok) {
+      throw new Error(
+        data?.error ||
+        "The job description could not be generated."
+      );
+    }
+
+    showResultScreen(
+      data.description,
+      Array.isArray(data.warnings)
+        ? data.warnings
+        : []
     );
 
-    // Temporary placeholder until GAS/OpenAI is connected.
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const description =
-      "Generated job description will appear here once the AI backend is connected.";
-
-    showResultScreen(description);
   } catch (err) {
-    console.error("Generation failed:", err);
+    console.error(
+      "Job description generation failed:",
+      err
+    );
 
     showGenerationError(
-      "We couldn't generate the job description. Please review the information and try again."
+      err?.message ||
+      "The job description could not be generated."
     );
   }
 }
 
 function buildGenerationPayload() {
-  return structuredClone(jobState);
+  const primaryCategory =
+    getCategory(jobState.primaryCategory);
+
+  const duties = {};
+
+  Object.entries(jobState.duties).forEach(
+    ([categoryId, dutyIds]) => {
+      const category = getCategory(categoryId);
+
+      duties[categoryId] = {
+        categoryLabel: category?.label || categoryId,
+
+        duties: dutyIds.map(id => {
+          const duty =
+            category?.duties.find(item => item.id === id);
+
+          return {
+            id,
+            label: duty?.label || id,
+            riskTags: duty?.riskTags || []
+          };
+        })
+      };
+    }
+  );
+
+  return {
+    primaryCategory: jobState.primaryCategory,
+    primaryCategoryLabel:
+      primaryCategory?.label || jobState.primaryCategory,
+
+    outputs: jobState.outputs,
+    outputsNone: jobState.outputsNone,
+
+    equipment: jobState.equipment,
+    equipmentNone: jobState.equipmentNone,
+
+    maintenanceLevel: jobState.maintenanceLevel,
+    supervisionLevel: jobState.supervisionLevel,
+
+    duties,
+
+    otherDuties:
+      structuredClone(jobState.otherDuties),
+
+    additionalInfo: jobState.additionalInfo
+  };
 }
 
 function syncJobDescriptionField(description) {
@@ -689,6 +789,12 @@ function syncJobDescriptionField(description) {
       err
     );
   }
+}
+
+function invalidateGeneratedDescription() {
+  generatedDescription = "";
+  acceptedDescription = "";
+  descriptionAccepted = false;
 }
 
 function wireEvents() {
@@ -711,10 +817,6 @@ function wireEvents() {
     }
   });
 
-  fields.generateBtn.addEventListener("click", () => {
-    console.log("Structured job payload:", structuredClone(jobState));
-  });
-
   fields.reviewBackBtn.addEventListener("click", () => {
     currentStep = 5;
     renderStep();
@@ -729,16 +831,6 @@ function wireEvents() {
     "click",
     generateJobDescription
   );
-
-  fields.useDescriptionBtn.addEventListener("click", () => {
-    const description =
-      clean_(fields.generatedDescription.value);
-
-    console.log(
-      "Accepted job description:",
-      description
-    );
-  });
 
   fields.useDescriptionBtn.addEventListener(
     "click",
@@ -770,7 +862,6 @@ function initializeWhenDomReady() {
     initializeWidget();
   }
 }
-
 initializeWhenDomReady();
 
 if (typeof JFCustomWidget !== "undefined") {
@@ -779,9 +870,8 @@ if (typeof JFCustomWidget !== "undefined") {
     initializeWidget();
     updateWidgetHeight();
   });
-}
 
-JFCustomWidget.subscribe("submit", function () {
+  JFCustomWidget.subscribe("submit", function () {
     if (!descriptionAccepted || !acceptedDescription) {
       fields.globalError.textContent =
         "Please generate, review, and select a job description before continuing.";
@@ -801,3 +891,4 @@ JFCustomWidget.subscribe("submit", function () {
       value: acceptedDescription
     });
   });
+}
