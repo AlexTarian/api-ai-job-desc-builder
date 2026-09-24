@@ -86,6 +86,8 @@ const fields = {
   backBtn: document.getElementById("backBtn"),
   nextBtn: document.getElementById("nextBtn"),
 
+  editDescriptionBtn: document.getElementById("editDescriptionBtn"),
+
   globalError: document.getElementById("globalError")
 };
 
@@ -754,3 +756,24 @@ if (typeof JFCustomWidget !== "undefined") {
     updateWidgetHeight();
   });
 }
+
+JFCustomWidget.subscribe("submit", function () {
+    if (!descriptionAccepted || !acceptedDescription) {
+      fields.globalError.textContent =
+        "Please generate, review, and select a job description before continuing.";
+
+      JFCustomWidget.sendSubmit({
+        valid: false,
+        value: ""
+      });
+
+      return;
+    }
+
+    fields.globalError.textContent = "";
+
+    JFCustomWidget.sendSubmit({
+      valid: true,
+      value: acceptedDescription
+    });
+  });
