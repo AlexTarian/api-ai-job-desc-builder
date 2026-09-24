@@ -87,6 +87,8 @@ const fields = {
   nextBtn: document.getElementById("nextBtn"),
 
   editDescriptionBtn: document.getElementById("editDescriptionBtn"),
+  resultHelp: document.getElementById("resultHelp"),
+  finalDescription: document.getElementById("finalDescription"),
 
   globalError: document.getElementById("globalError")
 };
@@ -539,15 +541,25 @@ function showResultScreen(description, warnings = []) {
   fields.loadingStep.hidden = true;
   fields.resultStep.hidden = false;
 
-  fields.generatedDescription.value = description || "";
+  generatedDescription = clean_(description);
   acceptedDescription = "";
   descriptionAccepted = false;
 
   fields.generatedDescription.value = generatedDescription;
 
+  fields.generatedDescription.hidden = false;
+  fields.finalDescription.hidden = true;
+  fields.finalDescription.textContent = "";
+
+  fields.regenerateBtn.hidden = false;
+  fields.useDescriptionBtn.hidden = false;
+  fields.editDescriptionBtn.hidden = true;
+
+  fields.resultHelp.textContent =
+    "Review and edit the description below before using it in the form.";
+
   if (warnings.length) {
     fields.generationWarnings.hidden = false;
-
     fields.generationWarnings.innerHTML = warnings
       .map(warning => `<div>⚠ ${escapeHtml(warning)}</div>`)
       .join("");
@@ -565,20 +577,27 @@ function acceptJobDescription() {
   if (!description) {
     fields.globalError.textContent =
       "Please review the generated job description before continuing.";
-
     return;
   }
 
   acceptedDescription = description;
   descriptionAccepted = true;
 
-  syncJobDescriptionField(description);
-
   fields.globalError.textContent = "";
 
-  fields.generatedDescription.readOnly = true;
+  fields.finalDescription.textContent = description;
+
+  fields.generatedDescription.hidden = true;
+  fields.finalDescription.hidden = false;
+
+  fields.regenerateBtn.hidden = true;
   fields.useDescriptionBtn.hidden = true;
   fields.editDescriptionBtn.hidden = false;
+
+  fields.resultHelp.textContent =
+    "This job description has been finalized.";
+
+  syncJobDescriptionField(description);
 
   updateWidgetHeight();
 }
@@ -587,10 +606,15 @@ function editAcceptedDescription() {
   descriptionAccepted = false;
   acceptedDescription = "";
 
-  fields.generatedDescription.readOnly = false;
+  fields.finalDescription.hidden = true;
+  fields.generatedDescription.hidden = false;
 
+  fields.regenerateBtn.hidden = false;
   fields.useDescriptionBtn.hidden = false;
   fields.editDescriptionBtn.hidden = true;
+
+  fields.resultHelp.textContent =
+    "Review and edit the description below before using it in the form.";
 
   fields.generatedDescription.focus();
 
