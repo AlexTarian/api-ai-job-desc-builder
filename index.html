@@ -152,9 +152,11 @@
     <section id="resultStep" class="generation-screen" hidden>
       <h3>Generated Job Description</h3>
 
-      <p class="step-help">
+      <p id="resultHelp" class="step-help">
         Review and edit the description below before using it in the form.
       </p>
+
+      <label class="sr-only" for="generatedDescription">Generated Job Description</label>
 
       <textarea
         id="generatedDescription"
@@ -163,18 +165,18 @@
         aria-label="Generated Job Description"
       ></textarea>
 
+      <div
+        id="finalDescription"
+        class="final-description"
+        hidden
+      ></div>
+
       <div id="generationWarnings" class="generation-warnings" hidden></div>
 
       <div class="result-actions">
         <button id="regenerateBtn" class="secondary-btn" type="button">Regenerate</button>
-
-        <button id="editDescriptionBtn" class="secondary-btn" type="button" hidden>
-          Edit Description
-        </button>
-
-        <button id="useDescriptionBtn" type="button">
-          Use Job Description
-        </button>
+        <button id="editDescriptionBtn" class="secondary-btn" type="button" hidden>Edit Description</button>
+        <button id="useDescriptionBtn" type="button">Use Job Description</button>
       </div>
     </section>
 
