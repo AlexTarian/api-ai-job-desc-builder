@@ -374,8 +374,6 @@ button:disabled {
 
 .final-description {
   padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
   background: var(--bg-soft);
   font-size: 14px;
   line-height: 1.55;
