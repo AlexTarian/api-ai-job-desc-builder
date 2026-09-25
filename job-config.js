@@ -14,8 +14,7 @@ window.JOB_CONFIG = {
         { id: "operate-material-handling", label: "Operate material-handling equipment, such as forklifts, augers, or conveyors" },
         { id: "equipment-load-unload", label: "Load and unload crops, materials, or supplies using equipment" },
         { id: "farm-transport", label: "Transport materials, supplies, or equipment around the farm" },
-        { id: "operate-specialized-equipment", label: "Transport harvested commodities to elevator/storage" },
-        { id: "prepare-equipment", label: "Inspect, clean, maintain, and prepare agricultural equipment" }
+        { id: "transport-harvested-commodities", label: "Transport harvested commodities to elevator/storage" },
       ]
     },
 
