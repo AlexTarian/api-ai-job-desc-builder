@@ -14,7 +14,7 @@
     <div class="widget-header">
       <div>
         <h2>Job Description Builder</h2>
-        <div class="progress-text" id="progressText">Step 1 of 5</div>
+        <div class="progress-text" id="progressText">Step 1 of 8</div>
       </div>
     </div>
 
@@ -22,19 +22,33 @@
       <div id="progressFill" class="progress-fill"></div>
     </div>
 
-    <!-- STEP 1: PRIMARY CATEGORY -->
-    <section id="categoryStep" class="step">
+    <!-- STEP 1: PRIMARY TYPE -->
+    <section id="primaryTypeStep" class="step">
       <h3>What is the worker's primary type of work?</h3>
-      <p class="step-help">Choose the category that best describes the worker's main responsibilities.</p>
+      <p class="step-help">Choose the category that best describes the main purpose of the job.</p>
 
-      <div id="categoryGrid" class="category-grid"></div>
+      <div id="primaryTypeGrid" class="category-grid"></div>
 
-      <div id="categoryError" class="error" aria-live="polite"></div>
+      <div id="primaryTypeError" class="error" aria-live="polite"></div>
     </section>
 
-    <!-- STEP 2: WORK CONTEXT -->
+    <!-- STEP 2: SECONDARY TYPES -->
+    <section id="secondaryTypesStep" class="step" hidden>
+      <h3>Does the job include any other major types of work?</h3>
+      <p class="step-help">
+        Select any additional categories that make up a meaningful part of the job.
+        You can leave all options unselected if none apply.
+      </p>
+
+      <div id="secondaryTypesGrid" class="category-grid multi-select-grid"></div>
+
+      <div id="secondaryTypesError" class="error" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 3: MAINTENANCE / SUPERVISION -->
     <section id="workContextStep" class="step" hidden>
       <h3>Tell us a little more about the job</h3>
+      <p class="step-help">These questions help us understand how prominent certain duties are.</p>
 
       <div id="maintenanceQuestion" class="question-block">
         <label>How much maintenance or repair work will workers perform?</label>
@@ -52,22 +66,46 @@
 
         <div class="choice-list">
           <label><input type="radio" name="supervisionLevel" value="none" /> None</label>
-          <label><input type="radio" name="supervisionLevel" value="incidental" /> Occasional</label>
-          <label><input type="radio" name="supervisionLevel" value="regular" /> Regular supervision</label>
+          <label><input type="radio" name="supervisionLevel" value="incidental" /> Occasional / incidental</label>
+          <label><input type="radio" name="supervisionLevel" value="regular" /> Regular part of the job</label>
           <label><input type="radio" name="supervisionLevel" value="significant" /> Significant part of the job</label>
         </div>
       </div>
 
-      <div id="contextError" class="error" aria-live="polite"></div>
+      <div id="workContextError" class="error" aria-live="polite"></div>
     </section>
 
-    <!-- STEP 3: JOB DETAILS -->
+    <!-- STEP 4: SEASON / PERIOD FALLBACK -->
+    <section id="seasonStep" class="step" hidden>
+      <h3>When is this work performed?</h3>
+      <p class="step-help">
+        Select the seasons that make up the period of need. This question is only shown when we cannot determine the season from the form's dates.
+      </p>
+
+      <div id="seasonChoices" class="choice-list">
+        <label><input type="checkbox" name="season" value="spring" /> Spring</label>
+        <label><input type="checkbox" name="season" value="summer" /> Summer</label>
+        <label><input type="checkbox" name="season" value="fall" /> Fall</label>
+        <label><input type="checkbox" name="season" value="winter" /> Winter</label>
+      </div>
+
+      <div id="seasonError" class="error" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 5: OUTPUTS / EQUIPMENT -->
     <section id="jobDetailsStep" class="step" hidden>
-      <h3>Tell us a little more about the job</h3>
+      <h3>What will workers work with?</h3>
 
       <div class="question-block">
-        <label for="outputs">What crops, livestock, or other agricultural products will workers help produce or handle?</label>
-        <textarea id="outputs" rows="3" placeholder="Examples: corn, soybeans, cattle, milk, honey, nursery plants"></textarea>
+        <label for="outputs">
+          What crops, livestock, or other agricultural products will workers help produce or handle?
+        </label>
+
+        <textarea
+          id="outputs"
+          rows="3"
+          placeholder="Examples: corn, soybeans, cattle, milk, honey, nursery plants"
+        ></textarea>
 
         <label class="checkbox-row compact-check">
           <input id="outputsNone" type="checkbox" />
@@ -76,8 +114,15 @@
       </div>
 
       <div class="question-block">
-        <label for="equipment">What equipment, machinery, vehicles, or tools will workers use?</label>
-        <textarea id="equipment" rows="3" placeholder="Examples: tractors, combines, planters, grain carts, hand tools"></textarea>
+        <label for="equipment">
+          What major equipment, machinery, or vehicles will workers use?
+        </label>
+
+        <textarea
+          id="equipment"
+          rows="3"
+          placeholder="Examples: tractors, combines, planters, grain carts, skid steers"
+        ></textarea>
 
         <label class="checkbox-row compact-check">
           <input id="equipmentNone" type="checkbox" />
@@ -85,10 +130,45 @@
         </label>
       </div>
 
-      <div id="contextError" class="error" aria-live="polite"></div>
+      <div id="jobDetailsError" class="error" aria-live="polite"></div>
     </section>
 
-    <!-- STEP 4: DUTIES -->
+    <!-- STEP 6: JOB GOAL -->
+    <section id="jobGoalStep" class="step" hidden>
+      <h3>What is the main goal of this job?</h3>
+      <p class="step-help">
+        In a sentence or two, describe what the workers are primarily being hired to accomplish.
+      </p>
+
+      <div class="question-block">
+        <label for="jobGoal">Job summary</label>
+
+        <textarea
+          id="jobGoal"
+          rows="4"
+          placeholder="Example: Operate farm equipment to plant, maintain, harvest, and transport grain crops."
+        ></textarea>
+
+        <div id="jobGoalSuggestions" class="suggestion-list" hidden></div>
+      </div>
+
+      <div class="question-block">
+        <label for="additionalInfo">Anything else we should know?</label>
+        <p class="field-help">
+          Include unusual work, important seasonal details, or anything else that would help us describe the job accurately.
+        </p>
+
+        <textarea
+          id="additionalInfo"
+          rows="4"
+          placeholder="Optional additional details..."
+        ></textarea>
+      </div>
+
+      <div id="jobGoalError" class="error" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 7: DUTIES -->
     <section id="dutiesStep" class="step" hidden>
       <div class="duties-heading">
         <div>
@@ -103,24 +183,22 @@
 
       <div class="other-duty-wrap">
         <label for="otherDuty">Other work in this category</label>
-        <textarea id="otherDuty" rows="2" placeholder="Describe any important duty not listed above."></textarea>
+        <textarea
+          id="otherDuty"
+          rows="2"
+          placeholder="Describe any important duty not listed above."
+        ></textarea>
       </div>
 
       <div id="dutiesError" class="error" aria-live="polite"></div>
     </section>
 
-    <!-- STEP 5: ADDITIONAL INFO -->
-    <section id="notesStep" class="step" hidden>
-      <h3>Anything else we should know?</h3>
-      <p class="step-help">Include unusual tasks, seasonal details, or anything else that would help us describe the job accurately.</p>
-
-      <textarea id="additionalInfo" rows="6" placeholder="Additional job details..."></textarea>
-    </section>
-
-    <!-- STEP 6: REVIEW -->
+    <!-- STEP 8: REVIEW -->
     <section id="reviewStep" class="step" hidden>
       <h3>Review Job Information</h3>
-      <p class="step-help">Please review the information below before generating the job description.</p>
+      <p class="step-help">
+        Please review the information below before generating the job description.
+      </p>
 
       <div id="reviewContent" class="review-card"></div>
 
@@ -169,7 +247,11 @@
         hidden
       ></div>
 
-      <div id="generationWarnings" class="generation-warnings" hidden></div>
+      <div
+        id="generationWarnings"
+        class="generation-warnings"
+        hidden
+      ></div>
 
       <div class="result-actions">
         <button id="regenerateBtn" class="secondary-btn" type="button">Regenerate</button>
@@ -178,15 +260,16 @@
       </div>
     </section>
 
+    <!-- STANDARD STEP NAVIGATION -->
     <div class="navigation-row">
       <button id="backBtn" class="secondary-btn" type="button" hidden>Back</button>
-      <button id="nextBtn" type="button">Continue</button>
+      <button id="nextBtn" type="button" hidden>Continue</button>
     </div>
 
     <div id="globalError" class="error" aria-live="polite"></div>
   </div>
 
-  <script src="job-config.js?v=3"></script>
-  <script src="job-builder.js?v=3"></script>
+  <script src="job-config.js?v=4"></script>
+  <script src="job-builder.js?v=4"></script>
 </body>
 </html>
