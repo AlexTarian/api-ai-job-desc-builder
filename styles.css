@@ -364,6 +364,7 @@ button:disabled {
 }
 
 .loading-tip-box {
+  width: 100%;
   max-width: 520px;
   min-height: 92px;
   margin: 24px auto 0;
