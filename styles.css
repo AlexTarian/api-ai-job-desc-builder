@@ -363,6 +363,23 @@ button:disabled {
   font-size: 11px;
 }
 
+.loading-tip {
+  max-width: 520px;
+  margin: 24px auto 0;
+  min-height: 72px;
+  text-align: center;
+  line-height: 1.55;
+  color: #555;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.loading-tip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .ai-spinner {
   width: 38px;
   height: 38px;
