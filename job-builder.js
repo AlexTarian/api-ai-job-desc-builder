@@ -590,11 +590,6 @@ function goBack() {
   renderStep();
 }
 
-function syncFinalState() {
-  jobState.additionalInfo =
-    clean_(fields.additionalInfo.value);
-}
-
 function renderReview() {
   const primary = getCategory(jobState.primaryCategory);
 
@@ -880,7 +875,7 @@ function showGenerationError(message) {
 async function generateJobDescription() {
   fields.globalError.textContent = "";
 
-  syncFinalState();
+  syncJobGoalState();
   resetAcceptedDescription();
   showLoadingScreen();
 
@@ -957,8 +952,7 @@ async function generateJobDescription() {
 }
 
 function buildGenerationPayload() {
-  const primaryCategory =
-    getCategory(jobState.primaryCategory);
+  const primaryCategory = getCategory(jobState.primaryCategory);
 
   const duties = {};
 
@@ -970,27 +964,12 @@ function buildGenerationPayload() {
         categoryLabel: category?.label || categoryId,
 
         duties: dutyIds.map(id => {
-          const duty =
-            category?.duties.find(item => item.id === id);
+          const duty = category?.duties.find(item => item.id === id);
 
           return {
-            primaryCategory: jobState.primaryCategory,
-            primaryCategoryLabel: primaryCategory?.label || jobState.primaryCategory,
-            secondaryCategories: structuredClone(jobState.secondaryCategories),
-            outputs: jobState.outputs,
-            outputsNone: jobState.outputsNone,
-            outputTypes: structuredClone(jobState.outputTypes),
-            equipment: jobState.equipment,
-            equipmentNone: jobState.equipmentNone,
-            equipmentTypes: structuredClone(jobState.equipmentTypes),
-            maintenanceLevel: jobState.maintenanceLevel,
-            supervisionLevel: jobState.supervisionLevel,
-            seasons: structuredClone(jobState.seasons),
-            seasonSource: jobState.seasonSource,
-            jobGoal: jobState.jobGoal,
-            duties,
-            otherDuties: structuredClone(jobState.otherDuties),
-            additionalInfo: jobState.additionalInfo
+            id,
+            label: duty?.label || id,
+            riskTags: duty?.riskTags || []
           };
         })
       };
@@ -999,23 +978,21 @@ function buildGenerationPayload() {
 
   return {
     primaryCategory: jobState.primaryCategory,
-    primaryCategoryLabel:
-      primaryCategory?.label || jobState.primaryCategory,
-
+    primaryCategoryLabel: primaryCategory?.label || jobState.primaryCategory,
+    secondaryCategories: structuredClone(jobState.secondaryCategories),
     outputs: jobState.outputs,
     outputsNone: jobState.outputsNone,
-
+    outputTypes: structuredClone(jobState.outputTypes),
     equipment: jobState.equipment,
     equipmentNone: jobState.equipmentNone,
-
+    equipmentTypes: structuredClone(jobState.equipmentTypes),
     maintenanceLevel: jobState.maintenanceLevel,
     supervisionLevel: jobState.supervisionLevel,
-
+    seasons: structuredClone(jobState.seasons),
+    seasonSource: jobState.seasonSource,
+    jobGoal: jobState.jobGoal,
     duties,
-
-    otherDuties:
-      structuredClone(jobState.otherDuties),
-
+    otherDuties: structuredClone(jobState.otherDuties),
     additionalInfo: jobState.additionalInfo
   };
 }
