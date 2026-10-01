@@ -60,6 +60,9 @@ let jotformReady = false;
 let generatedDescription = "";
 let acceptedDescription = "";
 let descriptionAccepted = false;
+let loadingTipTimer = null;
+let loadingTipQueue = [];
+let loadingTipIndex = 0;
 
 const fields = {
   widgetRoot: document.getElementById("widgetRoot"),
@@ -783,6 +786,73 @@ function hideAllBuilderSteps_() {
   fields.reviewStep.hidden = true;
 }
 
+let loadingTipTimer = null;
+let loadingTipQueue = [];
+let loadingTipIndex = 0;
+
+function shuffleLoadingTips_() {
+  loadingTipQueue = [...H2A_LOADING_TIPS];
+
+  for (let i = loadingTipQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [loadingTipQueue[i], loadingTipQueue[j]] =
+      [loadingTipQueue[j], loadingTipQueue[i]];
+  }
+
+  loadingTipIndex = 0;
+}
+
+function showNextLoadingTip_() {
+  if (!fields.loadingTip || !loadingTipQueue.length) return;
+
+  fields.loadingTip.classList.remove("visible");
+
+  setTimeout(() => {
+    if (!loadingTipTimer) return;
+
+    fields.loadingTip.textContent =
+      loadingTipQueue[loadingTipIndex];
+
+    loadingTipIndex++;
+
+    if (loadingTipIndex >= loadingTipQueue.length) {
+      shuffleLoadingTips_();
+    }
+
+    fields.loadingTip.classList.add("visible");
+
+    updateWidgetHeight();
+  }, 500);
+}
+
+function startLoadingTips_() {
+  stopLoadingTips_();
+
+  shuffleLoadingTips_();
+
+  // Non-null value also acts as our "running" flag.
+  loadingTipTimer = setInterval(
+    showNextLoadingTip_,
+    6000
+  );
+
+  // Show the first one immediately instead of waiting six seconds.
+  showNextLoadingTip_();
+}
+
+function stopLoadingTips_() {
+  if (loadingTipTimer) {
+    clearInterval(loadingTipTimer);
+    loadingTipTimer = null;
+  }
+
+  if (fields.loadingTip) {
+    fields.loadingTip.classList.remove("visible");
+    fields.loadingTip.textContent = "";
+  }
+}
+
 function showLoadingScreen() {
   hideAllBuilderSteps_();
 
@@ -792,10 +862,14 @@ function showLoadingScreen() {
   fields.backBtn.hidden = true;
   fields.nextBtn.hidden = true;
 
+  startLoadingTips_();
+
   updateWidgetHeight();
 }
 
 function showResultScreen(description, warnings = []) {
+  stopLoadingTips_();
+  
   fields.loadingStep.hidden = true;
   fields.resultStep.hidden = false;
 
@@ -899,6 +973,8 @@ function resetAcceptedDescription() {
 }
 
 function showGenerationError(message) {
+  stopLoadingTips_();
+  
   fields.loadingStep.hidden = true;
   fields.reviewStep.hidden = false;
 
