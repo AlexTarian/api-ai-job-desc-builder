@@ -553,6 +553,20 @@ function goNext() {
 }
 
 function goBack() {
+  if (!fields.resultStep.hidden) {
+    fields.resultStep.hidden = true;
+    fields.reviewStep.hidden = false;
+
+    currentStep = 8;
+
+    fields.backBtn.hidden = true;
+    fields.nextBtn.hidden = true;
+
+    updateProgress();
+    updateWidgetHeight();
+    return;
+  }
+  
   if (currentStep === 7 && dutyQueueIndex > 0) {
     saveCurrentDutyNotes();
     dutyQueueIndex--;
@@ -765,6 +779,9 @@ function showLoadingScreen() {
 function showResultScreen(description, warnings = []) {
   fields.loadingStep.hidden = true;
   fields.resultStep.hidden = false;
+
+  fields.backBtn.hidden = false;
+  fields.nextBtn.hidden = true;
 
   generatedDescription = clean_(description);
   acceptedDescription = "";
