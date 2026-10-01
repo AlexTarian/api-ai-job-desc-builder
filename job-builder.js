@@ -786,10 +786,6 @@ function hideAllBuilderSteps_() {
   fields.reviewStep.hidden = true;
 }
 
-let loadingTipTimer = null;
-let loadingTipQueue = [];
-let loadingTipIndex = 0;
-
 function shuffleLoadingTips_() {
   loadingTipQueue = [...H2A_LOADING_TIPS];
 
