@@ -7,15 +7,23 @@ if (!JOB_CONFIG || !JOB_CONFIG.categories) {
 
 const jobState = {
   primaryCategory: null,
+  secondaryCategories: [],
 
   maintenanceLevel: null,
   supervisionLevel: null,
 
+  seasons: [],
+  seasonSource: "manual",
+
   outputs: "",
   outputsNone: false,
+  outputTypes: [],
 
   equipment: "",
   equipmentNone: false,
+  equipmentTypes: [],
+
+  jobGoal: "",
 
   duties: {},
   otherDuties: {},
@@ -23,7 +31,7 @@ const jobState = {
   additionalInfo: ""
 };
 
-const STEP_COUNT = 6;
+const STEP_COUNT = 8;
 
 let currentStep = 1;
 
@@ -41,15 +49,49 @@ const fields = {
   progressText: document.getElementById("progressText"),
   progressFill: document.getElementById("progressFill"),
 
-  categoryStep: document.getElementById("categoryStep"),
+  primaryTypeStep: document.getElementById("primaryTypeStep"),
+  secondaryTypesStep: document.getElementById("secondaryTypesStep"),
   workContextStep: document.getElementById("workContextStep"),
+  seasonStep: document.getElementById("seasonStep"),
   jobDetailsStep: document.getElementById("jobDetailsStep"),
+  jobGoalStep: document.getElementById("jobGoalStep"),
   dutiesStep: document.getElementById("dutiesStep"),
-  notesStep: document.getElementById("notesStep"),
   reviewStep: document.getElementById("reviewStep"),
+
   loadingStep: document.getElementById("loadingStep"),
   resultStep: document.getElementById("resultStep"),
 
+  primaryTypeGrid: document.getElementById("primaryTypeGrid"),
+  secondaryTypesGrid: document.getElementById("secondaryTypesGrid"),
+
+  primaryTypeError: document.getElementById("primaryTypeError"),
+  secondaryTypesError: document.getElementById("secondaryTypesError"),
+  workContextError: document.getElementById("workContextError"),
+  seasonError: document.getElementById("seasonError"),
+  jobDetailsError: document.getElementById("jobDetailsError"),
+  jobGoalError: document.getElementById("jobGoalError"),
+  dutiesError: document.getElementById("dutiesError"),
+
+  maintenanceQuestion: document.getElementById("maintenanceQuestion"),
+  supervisionQuestion: document.getElementById("supervisionQuestion"),
+
+  outputs: document.getElementById("outputs"),
+  outputsNone: document.getElementById("outputsNone"),
+
+  equipment: document.getElementById("equipment"),
+  equipmentNone: document.getElementById("equipmentNone"),
+
+  jobGoal: document.getElementById("jobGoal"),
+  jobGoalSuggestions: document.getElementById("jobGoalSuggestions"),
+  additionalInfo: document.getElementById("additionalInfo"),
+
+  dutiesTitle: document.getElementById("dutiesTitle"),
+  dutiesHelp: document.getElementById("dutiesHelp"),
+  dutiesProgress: document.getElementById("dutiesProgress"),
+  dutiesList: document.getElementById("dutiesList"),
+  otherDuty: document.getElementById("otherDuty"),
+
+  reviewContent: document.getElementById("reviewContent"),
   reviewBackBtn: document.getElementById("reviewBackBtn"),
   generateBtn: document.getElementById("generateBtn"),
 
@@ -58,36 +100,13 @@ const fields = {
 
   regenerateBtn: document.getElementById("regenerateBtn"),
   useDescriptionBtn: document.getElementById("useDescriptionBtn"),
+  editDescriptionBtn: document.getElementById("editDescriptionBtn"),
 
-  categoryGrid: document.getElementById("categoryGrid"),
-  categoryError: document.getElementById("categoryError"),
-
-  outputs: document.getElementById("outputs"),
-  outputsNone: document.getElementById("outputsNone"),
-  equipment: document.getElementById("equipment"),
-  equipmentNone: document.getElementById("equipmentNone"),
-
-  maintenanceQuestion: document.getElementById("maintenanceQuestion"),
-  supervisionQuestion: document.getElementById("supervisionQuestion"),
-  contextError: document.getElementById("contextError"),
-
-  dutiesTitle: document.getElementById("dutiesTitle"),
-  dutiesHelp: document.getElementById("dutiesHelp"),
-  dutiesProgress: document.getElementById("dutiesProgress"),
-  dutiesList: document.getElementById("dutiesList"),
-  otherDuty: document.getElementById("otherDuty"),
-  dutiesError: document.getElementById("dutiesError"),
-
-  additionalInfo: document.getElementById("additionalInfo"),
-
-  reviewContent: document.getElementById("reviewContent"),
+  resultHelp: document.getElementById("resultHelp"),
+  finalDescription: document.getElementById("finalDescription"),
 
   backBtn: document.getElementById("backBtn"),
   nextBtn: document.getElementById("nextBtn"),
-
-  editDescriptionBtn: document.getElementById("editDescriptionBtn"),
-  resultHelp: document.getElementById("resultHelp"),
-  finalDescription: document.getElementById("finalDescription"),
 
   globalError: document.getElementById("globalError")
 };
@@ -115,39 +134,102 @@ function getCategory(categoryId) {
   return JOB_CONFIG.categories[categoryId] || null;
 }
 
-function renderCategories() {
-  fields.categoryGrid.innerHTML = "";
+function renderPrimaryTypes() {
+  fields.primaryTypeGrid.innerHTML = "";
 
   Object.entries(JOB_CONFIG.categories).forEach(([id, category]) => {
-    const button = document.createElement("button");
-
-    button.type = "button";
-    button.className = "category-card";
-    button.innerHTML = `
-      <img
-        class="category-icon"
-        src="${escapeHtml(category.icon)}"
-        alt=""
-        aria-hidden="true"
-      />
-
-      <span class="category-label">
-        ${escapeHtml(category.label)}
-      </span>
-    `;
+    const button = createCategoryButton_(id, category);
 
     if (jobState.primaryCategory === id) {
       button.classList.add("selected");
     }
 
     button.addEventListener("click", () => {
+      const previousPrimary = jobState.primaryCategory;
+
       jobState.primaryCategory = id;
-      fields.categoryError.textContent = "";
-      renderCategories();
+
+      // A category cannot be both primary and secondary.
+      jobState.secondaryCategories =
+        jobState.secondaryCategories.filter(categoryId => categoryId !== id);
+
+      // Reset old automatic primary levels if the primary changed.
+      if (previousPrimary === "maintenance" && id !== "maintenance") {
+        jobState.maintenanceLevel = null;
+      }
+
+      if (previousPrimary === "supervision" && id !== "supervision") {
+        jobState.supervisionLevel = null;
+      }
+
+      if (id === "maintenance") {
+        jobState.maintenanceLevel = "primary";
+      }
+
+      if (id === "supervision") {
+        jobState.supervisionLevel = "primary";
+      }
+
+      fields.primaryTypeError.textContent = "";
+
+      renderPrimaryTypes();
+      renderSecondaryTypes();
+
+      // Primary selection advances immediately.
+      currentStep = 2;
+      renderStep();
     });
 
-    fields.categoryGrid.appendChild(button);
+    fields.primaryTypeGrid.appendChild(button);
   });
+}
+
+function renderSecondaryTypes() {
+  fields.secondaryTypesGrid.innerHTML = "";
+
+  Object.entries(JOB_CONFIG.categories).forEach(([id, category]) => {
+    if (id === jobState.primaryCategory) {
+      return;
+    }
+
+    const button = createCategoryButton_(id, category);
+
+    if (jobState.secondaryCategories.includes(id)) {
+      button.classList.add("selected");
+    }
+
+    button.addEventListener("click", () => {
+      const selected = new Set(jobState.secondaryCategories);
+
+      if (selected.has(id)) {
+        selected.delete(id);
+      } else {
+        selected.add(id);
+      }
+
+      jobState.secondaryCategories = [...selected];
+
+      fields.secondaryTypesError.textContent = "";
+      renderSecondaryTypes();
+    });
+
+    fields.secondaryTypesGrid.appendChild(button);
+  });
+}
+
+function createCategoryButton_(id, category) {
+  const button = document.createElement("button");
+
+  button.type = "button";
+  button.className = "category-card";
+  button.dataset.categoryId = id;
+
+  button.innerHTML = `
+    <img class="category-icon" src="${escapeHtml(category.icon)}" alt="" aria-hidden="true" />
+    <span class="category-label">${escapeHtml(category.label)}</span>
+  `;
+
+  return button;
 }
 
 function syncWorkContextState() {
@@ -169,8 +251,11 @@ function syncJobDetailsState() {
 function configureWorkContextStep() {
   const primary = jobState.primaryCategory;
 
-  fields.maintenanceQuestion.hidden = primary === "maintenance";
-  fields.supervisionQuestion.hidden = primary === "supervision";
+  fields.maintenanceQuestion.hidden =
+    primary === "maintenance";
+
+  fields.supervisionQuestion.hidden =
+    primary === "supervision";
 
   if (primary === "maintenance") {
     jobState.maintenanceLevel = "primary";
@@ -179,27 +264,78 @@ function configureWorkContextStep() {
   if (primary === "supervision") {
     jobState.supervisionLevel = "primary";
   }
+
+  syncWorkContextInputs_();
+}
+
+function syncWorkContextInputs_() {
+  if (jobState.maintenanceLevel !== "primary") {
+    const input = document.querySelector(
+      `input[name="maintenanceLevel"][value="${jobState.maintenanceLevel || ""}"]`
+    );
+
+    if (input) input.checked = true;
+  }
+
+  if (jobState.supervisionLevel !== "primary") {
+    const input = document.querySelector(
+      `input[name="supervisionLevel"][value="${jobState.supervisionLevel || ""}"]`
+    );
+
+    if (input) input.checked = true;
+  }
+}
+
+function syncSeasonState() {
+  jobState.seasons = [
+    ...document.querySelectorAll(
+      'input[name="season"]:checked'
+    )
+  ].map(input => input.value);
+
+  jobState.seasonSource = "manual";
+}
+
+function syncSeasonInputs_() {
+  const selected = new Set(jobState.seasons);
+
+  document.querySelectorAll(
+    'input[name="season"]'
+  ).forEach(input => {
+    input.checked = selected.has(input.value);
+  });
+}
+
+function syncJobGoalState() {
+  jobState.jobGoal = clean_(fields.jobGoal.value);
+  jobState.additionalInfo = clean_(fields.additionalInfo.value);
 }
 
 function buildDutyQueue() {
-  dutyQueue = [jobState.primaryCategory];
+  const queue = [
+    jobState.primaryCategory,
+    ...jobState.secondaryCategories
+  ];
 
   if (
     jobState.primaryCategory !== "maintenance" &&
+    !jobState.secondaryCategories.includes("maintenance") &&
     jobState.maintenanceLevel &&
     jobState.maintenanceLevel !== "none"
   ) {
-    dutyQueue.push("maintenance");
+    queue.push("maintenance");
   }
 
   if (
     jobState.primaryCategory !== "supervision" &&
+    !jobState.secondaryCategories.includes("supervision") &&
     jobState.supervisionLevel &&
     jobState.supervisionLevel !== "none"
   ) {
-    dutyQueue.push("supervision");
+    queue.push("supervision");
   }
 
+  dutyQueue = [...new Set(queue)].filter(Boolean);
   dutyQueueIndex = 0;
 }
 
@@ -261,27 +397,40 @@ function saveCurrentDutyNotes() {
 }
 
 function validateStep() {
-  fields.categoryError.textContent = "";
-  fields.contextError.textContent = "";
+  fields.primaryTypeError.textContent = "";
+  fields.secondaryTypesError.textContent = "";
+  fields.workContextError.textContent = "";
+  fields.seasonError.textContent = "";
+  fields.jobDetailsError.textContent = "";
+  fields.jobGoalError.textContent = "";
   fields.dutiesError.textContent = "";
+  fields.globalError.textContent = "";
 
+  // STEP 1: Primary Type
   if (currentStep === 1) {
     if (!jobState.primaryCategory) {
-      fields.categoryError.textContent =
+      fields.primaryTypeError.textContent =
         "Please select the worker's primary type of work.";
 
       return false;
     }
   }
 
+  // STEP 2: Secondary Types
+  // Zero selections is valid.
   if (currentStep === 2) {
+    return true;
+  }
+
+  // STEP 3: Maintenance / Supervision
+  if (currentStep === 3) {
     syncWorkContextState();
 
     if (
       jobState.primaryCategory !== "maintenance" &&
       !jobState.maintenanceLevel
     ) {
-      fields.contextError.textContent =
+      fields.workContextError.textContent =
         "Please indicate how much maintenance or repair work will be performed.";
 
       return false;
@@ -291,32 +440,58 @@ function validateStep() {
       jobState.primaryCategory !== "supervision" &&
       !jobState.supervisionLevel
     ) {
-      fields.contextError.textContent =
+      fields.workContextError.textContent =
         "Please indicate how much supervision will be performed.";
 
       return false;
     }
   }
 
-  if (currentStep === 3) {
+  // STEP 4: Seasons
+  if (currentStep === 4) {
+    syncSeasonState();
+
+    if (!jobState.seasons.length) {
+      fields.seasonError.textContent =
+        "Please select at least one season.";
+
+      return false;
+    }
+  }
+
+  // STEP 5: Outputs / Equipment
+  if (currentStep === 5) {
     syncJobDetailsState();
 
     if (!jobState.outputs && !jobState.outputsNone) {
-      fields.contextError.textContent =
+      fields.jobDetailsError.textContent =
         "Please describe the agricultural products involved or select None / Not applicable.";
 
       return false;
     }
 
     if (!jobState.equipment && !jobState.equipmentNone) {
-      fields.contextError.textContent =
-        "Please describe the equipment used or select None / Not applicable.";
+      fields.jobDetailsError.textContent =
+        "Please describe the major equipment used or select None / Not applicable.";
 
       return false;
     }
   }
 
-  if (currentStep === 4) {
+  // STEP 6: Job Goal
+  if (currentStep === 6) {
+    syncJobGoalState();
+
+    if (!jobState.jobGoal) {
+      fields.jobGoalError.textContent =
+        "Please briefly describe the main goal of the job.";
+
+      return false;
+    }
+  }
+
+  // STEP 7: Duties
+  if (currentStep === 7) {
     saveCurrentDutyNotes();
 
     const categoryId = dutyQueue[dutyQueueIndex];
@@ -337,17 +512,18 @@ function validateStep() {
 function goNext() {
   if (!validateStep()) return;
 
-  if (currentStep === 3) {
+  if (currentStep === 6) {
     buildDutyQueue();
   }
 
-  if (currentStep === 4) {
+  if (currentStep === 7) {
     saveCurrentDutyNotes();
 
     if (dutyQueueIndex < dutyQueue.length - 1) {
       dutyQueueIndex++;
       renderCurrentDutyCategory();
       updateProgress();
+      updateWidgetHeight();
       return;
     }
   }
@@ -356,16 +532,20 @@ function goNext() {
     currentStep++;
   }
 
-  if (currentStep === 2) {
+  if (currentStep === 3) {
     configureWorkContextStep();
   }
 
   if (currentStep === 4) {
+    syncSeasonInputs_();
+  }
+
+  if (currentStep === 7) {
     renderCurrentDutyCategory();
   }
 
-  if (currentStep === 6) {
-    syncFinalState();
+  if (currentStep === 8) {
+    syncJobGoalState();
     renderReview();
   }
 
@@ -373,11 +553,12 @@ function goNext() {
 }
 
 function goBack() {
-  if (currentStep === 4 && dutyQueueIndex > 0) {
+  if (currentStep === 7 && dutyQueueIndex > 0) {
     saveCurrentDutyNotes();
     dutyQueueIndex--;
     renderCurrentDutyCategory();
     updateProgress();
+    updateWidgetHeight();
     return;
   }
 
@@ -385,7 +566,24 @@ function goBack() {
     currentStep--;
   }
 
+  if (currentStep === 2) {
+    renderSecondaryTypes();
+  }
+
+  if (currentStep === 3) {
+    configureWorkContextStep();
+  }
+
   if (currentStep === 4) {
+    syncSeasonInputs_();
+  }
+
+  if (currentStep === 7) {
+    dutyQueueIndex = Math.max(
+      0,
+      dutyQueue.length - 1
+    );
+
     renderCurrentDutyCategory();
   }
 
@@ -398,20 +596,33 @@ function syncFinalState() {
 }
 
 function renderReview() {
-  const category = getCategory(jobState.primaryCategory);
+  const primary = getCategory(jobState.primaryCategory);
+
+  const secondaryLabels = jobState.secondaryCategories
+    .map(id => getCategory(id)?.label || id)
+    .filter(Boolean);
+
+  const seasonLabels = {
+    spring: "Spring",
+    summer: "Summer",
+    fall: "Fall",
+    winter: "Winter"
+  };
 
   const dutySections = dutyQueue.map(categoryId => {
     const categoryConfig = getCategory(categoryId);
     const selectedIds = jobState.duties[categoryId] || [];
 
     const labels = selectedIds
-      .map(id => categoryConfig.duties.find(duty => duty.id === id)?.label)
+      .map(id =>
+        categoryConfig?.duties.find(duty => duty.id === id)?.label
+      )
       .filter(Boolean);
 
     const other = clean_(jobState.otherDuties[categoryId]);
 
     return {
-      label: categoryConfig.label,
+      label: categoryConfig?.label || categoryId,
       values: [
         ...labels,
         ...(other ? [`Other: ${other}`] : [])
@@ -420,12 +631,19 @@ function renderReview() {
   });
 
   fields.reviewContent.innerHTML = `
-    ${reviewSection("Primary Category", category?.label || "")}
-    ${reviewSection("Agricultural Products", jobState.outputsNone ? "None / Not applicable" : jobState.outputs)}
-    ${reviewSection("Equipment / Tools", jobState.equipmentNone ? "None / Not applicable" : jobState.equipment)}
+    ${reviewSection("Primary Type", primary?.label || "")}
+    ${reviewSection("Secondary Types", secondaryLabels.length ? secondaryLabels.join("; ") : "None")}
     ${reviewSection("Maintenance", formatLevel(jobState.maintenanceLevel))}
     ${reviewSection("Supervision", formatLevel(jobState.supervisionLevel))}
-    ${dutySections.map(section => reviewSection(`${section.label} Duties`, section.values.join("; "))).join("")}
+    ${reviewSection("Period / Seasons", jobState.seasons.map(season => seasonLabels[season] || season).join("; "))}
+    ${reviewSection("Agricultural Products", jobState.outputsNone ? "None / Not applicable" : jobState.outputs)}
+    ${reviewSection("Major Equipment", jobState.equipmentNone ? "None / Not applicable" : jobState.equipment)}
+    ${reviewSection("Job Goal", jobState.jobGoal)}
+    ${dutySections
+      .map(section =>
+        reviewSection(`${section.label} Duties`, section.values.join("; "))
+      )
+      .join("")}
     ${reviewSection("Additional Information", jobState.additionalInfo || "None")}
   `;
 }
@@ -462,23 +680,30 @@ function escapeHtml(value) {
 }
 
 function renderStep() {
-  fields.categoryStep.hidden = currentStep !== 1;
-  fields.workContextStep.hidden = currentStep !== 2;
-  fields.jobDetailsStep.hidden = currentStep !== 3;
-  fields.dutiesStep.hidden = currentStep !== 4;
-  fields.notesStep.hidden = currentStep !== 5;
-  fields.reviewStep.hidden = currentStep !== 6;
+  fields.primaryTypeStep.hidden = currentStep !== 1;
+  fields.secondaryTypesStep.hidden = currentStep !== 2;
+  fields.workContextStep.hidden = currentStep !== 3;
+  fields.seasonStep.hidden = currentStep !== 4;
+  fields.jobDetailsStep.hidden = currentStep !== 5;
+  fields.jobGoalStep.hidden = currentStep !== 6;
+  fields.dutiesStep.hidden = currentStep !== 7;
+  fields.reviewStep.hidden = currentStep !== 8;
 
   fields.loadingStep.hidden = true;
   fields.resultStep.hidden = true;
 
-  const isReview = currentStep === 6;
+  const isPrimary = currentStep === 1;
+  const isReview = currentStep === 8;
 
-  fields.backBtn.hidden = currentStep === 1 || isReview;
-  fields.nextBtn.hidden = isReview;
+  fields.backBtn.hidden = isPrimary || isReview;
+
+  // Step 1 advances immediately on card selection.
+  fields.nextBtn.hidden = isPrimary || isReview;
 
   fields.nextBtn.textContent =
-    currentStep === 5 ? "Review" : "Continue";
+    currentStep === 7
+      ? "Review"
+      : "Continue";
 
   updateProgress();
   updateWidgetHeight();
@@ -519,15 +744,21 @@ function updateWidgetHeight() {
   });
 }
 
-function showLoadingScreen() {
-  fields.categoryStep.hidden = true;
+function hideAllBuilderSteps_() {
+  fields.primaryTypeStep.hidden = true;
+  fields.secondaryTypesStep.hidden = true;
   fields.workContextStep.hidden = true;
+  fields.seasonStep.hidden = true;
   fields.jobDetailsStep.hidden = true;
+  fields.jobGoalStep.hidden = true;
   fields.dutiesStep.hidden = true;
-  fields.notesStep.hidden = true;
   fields.reviewStep.hidden = true;
-  fields.resultStep.hidden = true;
+}
 
+function showLoadingScreen() {
+  hideAllBuilderSteps_();
+
+  fields.resultStep.hidden = true;
   fields.loadingStep.hidden = false;
 
   fields.backBtn.hidden = true;
@@ -743,9 +974,23 @@ function buildGenerationPayload() {
             category?.duties.find(item => item.id === id);
 
           return {
-            id,
-            label: duty?.label || id,
-            riskTags: duty?.riskTags || []
+            primaryCategory: jobState.primaryCategory,
+            primaryCategoryLabel: primaryCategory?.label || jobState.primaryCategory,
+            secondaryCategories: structuredClone(jobState.secondaryCategories),
+            outputs: jobState.outputs,
+            outputsNone: jobState.outputsNone,
+            outputTypes: structuredClone(jobState.outputTypes),
+            equipment: jobState.equipment,
+            equipmentNone: jobState.equipmentNone,
+            equipmentTypes: structuredClone(jobState.equipmentTypes),
+            maintenanceLevel: jobState.maintenanceLevel,
+            supervisionLevel: jobState.supervisionLevel,
+            seasons: structuredClone(jobState.seasons),
+            seasonSource: jobState.seasonSource,
+            jobGoal: jobState.jobGoal,
+            duties,
+            otherDuties: structuredClone(jobState.otherDuties),
+            additionalInfo: jobState.additionalInfo
           };
         })
       };
@@ -818,7 +1063,9 @@ function wireEvents() {
   });
 
   fields.reviewBackBtn.addEventListener("click", () => {
-    currentStep = 5;
+    currentStep = 7;
+    dutyQueueIndex = Math.max(0, dutyQueue.length - 1);
+    renderCurrentDutyCategory();
     renderStep();
   });
 
@@ -850,7 +1097,8 @@ function initializeWidget() {
 
   console.log("Initializing Job Description Builder:", JOB_CONFIG);
 
-  renderCategories();
+  renderPrimaryTypes();
+  renderSecondaryTypes();
   wireEvents();
   renderStep();
 }
