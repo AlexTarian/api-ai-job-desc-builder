@@ -5,6 +5,24 @@ if (!JOB_CONFIG || !JOB_CONFIG.categories) {
   console.error("JOB_CONFIG did not load correctly.");
 }
 
+const H2A_LOADING_TIPS = [
+  "Treat all U.S. applicants and referrals fairly and offer the job to those who are qualified, willing, able, available.",
+  "U.S. workers doing any of the same tasks as H-2A workers are entitled to all the same rights, protections, and benefits.",
+  "You may only terminate U.S. workers for lawful, job-related reasons--not simply to replace them with H-2A workers.",
+  "Do not have workers perform unauthorized tasks or work at unauthorized worksites or for unauthorized businesses.",
+  "Do not make any deductions either prohibited by law or not disclosed in the job order.",
+  "You cannot require workers to work extra hours, but they can voluntarily choose to do so.",
+  "Provide each worker with a compliant pay slip on or before each payday. Contact us for a compliant template.",
+  "Be sure to track each worker's progress towards the 3/4 Guarantee.",
+  "Do not charge workers employment-related fees. Prohibit agents and recruiters from charging workers fees, too.",
+  "Regularly check to ensure that worker housing remains compliant with all applicable standards.",
+  "Reimburse workers, within their first pay period, for all transportation, consulate, and subsistence costs incurred.",
+  "Don’t keep workers’ travel/identity documents for longer than it takes to make copies.",
+  "Notify DOL & USCIS of all terminations, resignations, & job abandonments (H-2A and U.S.).",
+  "Keep records of each worker’s social security number to avoid backup withholding.",
+  "Keep all H-2A-related records for at least 3 years."
+];
+
 const jobState = {
   primaryCategory: null,
   secondaryCategories: [],
@@ -60,6 +78,7 @@ const fields = {
 
   loadingStep: document.getElementById("loadingStep"),
   resultStep: document.getElementById("resultStep"),
+  loadingTip: document.getElementById("loadingTip"),
 
   primaryTypeGrid: document.getElementById("primaryTypeGrid"),
   secondaryTypesGrid: document.getElementById("secondaryTypesGrid"),
