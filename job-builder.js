@@ -1122,10 +1122,11 @@ function buildGenerationPayload() {
 }
 
 function syncJobDescriptionField(description) {
+  const JobDescriptionFieldLabel = getSetting_("exportFieldLabel");
   try {
     JFCustomWidget.setFieldsValueByLabel([
       {
-        label: "Job Description",
+        label: JobDescriptionFieldLabel,
         value: description
       }
     ]);
