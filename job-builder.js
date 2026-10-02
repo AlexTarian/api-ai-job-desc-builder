@@ -166,14 +166,13 @@ function renderPrimaryTypes() {
       button.classList.add("selected");
     }
 
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const previousPrimary = jobState.primaryCategory;
 
       jobState.primaryCategory = id;
 
       // A category cannot be both primary and secondary.
-      jobState.secondaryCategories =
-        jobState.secondaryCategories.filter(categoryId => categoryId !== id);
+      jobState.secondaryCategories = jobState.secondaryCategories.filter(categoryId => categoryId !== id);
 
       // Reset old automatic primary levels if the primary changed.
       if (previousPrimary === "maintenance" && id !== "maintenance") {
@@ -194,10 +193,11 @@ function renderPrimaryTypes() {
 
       fields.primaryTypeError.textContent = "";
 
+      await loadJobDatesAndSeasons_();
+
       renderPrimaryTypes();
       renderSecondaryTypes();
 
-      // Primary selection advances immediately.
       currentStep = 2;
       renderStep();
     });
@@ -1125,6 +1125,48 @@ function invalidateGeneratedDescription() {
   generatedDescription = "";
   acceptedDescription = "";
   descriptionAccepted = false;
+}
+
+function inspectJobDateFields_() {
+  const startDateFieldId = getSetting_("startDateFieldId");
+  const endDateFieldId = getSetting_("endDateFieldId");
+
+  if (!startDateFieldId || !endDateFieldId) {
+    console.log("Start/end date field IDs are not configured.");
+    return;
+  }
+
+  JFCustomWidget.getFieldsValueById(
+    [startDateFieldId, endDateFieldId],
+    values => {
+      console.log("Raw Jotform date field values:", values);
+    }
+  );
+}
+
+function loadJobDatesAndSeasons_() {
+  return new Promise(resolve => {
+    const startDateFieldId = getSetting_("startDateFieldId");
+    const endDateFieldId = getSetting_("endDateFieldId");
+
+    if (!startDateFieldId || !endDateFieldId) {
+      jobState.seasonSource = "manual";
+      resolve();
+      return;
+    }
+
+    JFCustomWidget.getFieldsValueById(
+      [startDateFieldId, endDateFieldId],
+      values => {
+        console.log("Raw Jotform date values:", values);
+
+        // For this first pass, just inspect what Jotform actually gives us.
+        // We'll parse and calculate seasons once we see the real structure.
+
+        resolve();
+      }
+    );
+  });
 }
 
 function wireEvents() {
