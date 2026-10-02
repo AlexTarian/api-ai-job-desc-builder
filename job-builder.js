@@ -554,6 +554,14 @@ function goNext() {
     currentStep++;
   }
 
+  if (
+    currentStep === 4 &&
+    jobState.seasonSource === "dates" &&
+    jobState.seasons.length
+  ) {
+    currentStep = 5;
+  }
+
   if (currentStep === 3) {
     configureWorkContextStep();
   }
@@ -600,6 +608,14 @@ function goBack() {
 
   if (currentStep > 1) {
     currentStep--;
+  }
+
+  if (
+    currentStep === 4 &&
+    jobState.seasonSource === "dates" &&
+    jobState.seasons.length
+  ) {
+    currentStep = 3;
   }
 
   if (currentStep === 2) {
@@ -1150,23 +1166,186 @@ function loadJobDatesAndSeasons_() {
     const endDateFieldId = getSetting_("endDateFieldId");
 
     if (!startDateFieldId || !endDateFieldId) {
+      jobState.seasons = [];
       jobState.seasonSource = "manual";
-      resolve();
+      resolve(false);
       return;
     }
 
     JFCustomWidget.getFieldsValueById(
       [startDateFieldId, endDateFieldId],
-      values => {
-        console.log("Raw Jotform date values:", values);
+      response => {
+        try {
+          const values = Array.isArray(response?.data)
+            ? response.data
+            : [];
 
-        // For this first pass, just inspect what Jotform actually gives us.
-        // We'll parse and calculate seasons once we see the real structure.
+          const startEntry = values.find(
+            item => String(item.selector) === String(startDateFieldId)
+          );
 
-        resolve();
+          const endEntry = values.find(
+            item => String(item.selector) === String(endDateFieldId)
+          );
+
+          const startDate =
+            parseJotformDate_(startEntry?.value);
+
+          const endDate =
+            parseJotformDate_(endEntry?.value);
+
+          if (!startDate || !endDate || endDate < startDate) {
+            jobState.seasons = [];
+            jobState.seasonSource = "manual";
+
+            console.warn(
+              "Could not derive seasons from Jotform dates.",
+              {
+                startValue: startEntry?.value,
+                endValue: endEntry?.value
+              }
+            );
+
+            resolve(false);
+            return;
+          }
+
+          jobState.seasons =
+            getSeasonsForDateRange_(startDate, endDate);
+
+          jobState.seasonSource = "dates";
+
+          console.log(
+            "Derived job seasons:",
+            jobState.seasons
+          );
+
+          resolve(true);
+
+        } catch (err) {
+          console.warn(
+            "Failed to derive seasons from job dates:",
+            err
+          );
+
+          jobState.seasons = [];
+          jobState.seasonSource = "manual";
+
+          resolve(false);
+        }
       }
     );
   });
+}
+
+function parseJotformDate_(value) {
+  const match = String(value || "")
+    .trim()
+    .match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const year = Number(match[3]);
+
+  const date = new Date(year, month - 1, day);
+
+  // Guard against invalid dates such as 02/31/2027.
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function getSeasonForMonth_(monthIndex) {
+  // monthIndex is 0-11.
+  if (monthIndex === 11 || monthIndex <= 1) {
+    return "winter";
+  }
+
+  if (monthIndex <= 4) {
+    return "spring";
+  }
+
+  if (monthIndex <= 7) {
+    return "summer";
+  }
+
+  return "fall";
+}
+
+function getSeasonsForDateRange_(startDate, endDate) {
+  if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
+    return [];
+  }
+
+  if (endDate < startDate) {
+    return [];
+  }
+
+  const seasonDays = {
+    winter: 0,
+    spring: 0,
+    summer: 0,
+    fall: 0
+  };
+
+  const firstSeen = {};
+  let sequence = 0;
+
+  const cursor = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate()
+  );
+
+  const end = new Date(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate()
+  );
+
+  while (cursor <= end) {
+    const season = getSeasonForMonth_(
+      cursor.getMonth()
+    );
+
+    seasonDays[season]++;
+
+    if (!(season in firstSeen)) {
+      firstSeen[season] = sequence++;
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  const selected = Object.entries(seasonDays)
+    .filter(([, days]) => days > 0)
+    .sort((a, b) => {
+      const dayDifference = b[1] - a[1];
+
+      if (dayDifference !== 0) {
+        return dayDifference;
+      }
+
+      return firstSeen[a[0]] - firstSeen[b[0]];
+    })
+    .slice(0, 3)
+    .map(([season]) => season);
+
+  // Put the selected seasons back into the order
+  // in which they occur during this job period.
+  return selected.sort(
+    (a, b) => firstSeen[a] - firstSeen[b]
+  );
 }
 
 function wireEvents() {
